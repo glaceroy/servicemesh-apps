@@ -1,0 +1,133 @@
+---
+# ── Namespace ─────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: api-frontend
+  labels:
+    app.kubernetes.io/managed-by: kubectl
+
+---
+# ── ServiceAccount ────────────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: frontend-sa
+  namespace: api-frontend
+
+---
+# ── ConfigMap  (External API URLs - configure here) ──────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: api-frontend
+data:
+  F1_API_URL:       "http://formual1-api.ocp.cloud.lab"
+  FOOTBALL_API_URL: "http://football-api.ocp.cloud.lab"
+  CRICKET_API_URL:  "http://cricket-api.ocp.cloud.lab"
+  TENNIS_API_URL:   "http://tennis-api.ocp.cloud.lab"
+
+---
+# ── Deployment ────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-orchestration-console
+  namespace: api-frontend
+  labels:
+    app: api-orchestration-console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-orchestration-console
+  template:
+    metadata:
+      labels:
+        app: api-orchestration-console
+    spec:
+      serviceAccountName: frontend-sa
+      # Run as non-root unprivileged user
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+        - name: frontend
+          image: api-orchestration-console:latest   # replace with your registry image
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          # Load all env vars from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: frontend-config
+          env:
+            - name: PORT
+              value: "8080"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+
+---
+# ── Service ───────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-orchestration-console
+  namespace: api-frontend
+  labels:
+    app: api-orchestration-console
+spec:
+  selector:
+    app: api-orchestration-console
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  type: ClusterIP
+
+---
+# ── OpenShift Route ───────────────────────────────────────────
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: api-orchestration-console
+  namespace: api-frontend
+  labels:
+    app: api-orchestration-console
+spec:
+  host: api-console.ocp.cloud.lab   # update as needed
+  to:
+    kind: Service
+    name: api-orchestration-console
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

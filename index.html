@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Orchestration Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #063146;
+      --bg-dark:   #041e2e;
+      --bg-panel:  #082d42;
+      --bg-card:   #0a3650;
+      --accent:    #107ab0;
+      --accent-h:  #1592d0;
+      --border:    #0e4d72;
+      --border-l:  #1a6896;
+      --text:      #c8dde8;
+      --text-dim:  #6b94aa;
+      --text-bright:#e8f4f8;
+      --green:     #2ecc71;
+      --red:       #e74c3c;
+      --yellow:    #f39c12;
+      --mono:      'IBM Plex Mono', monospace;
+      --sans:      'IBM Plex Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-dark);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── Layout ── */
+    .shell {
+      display: grid;
+      grid-template-rows: 56px 1fr;
+      grid-template-columns: 240px 1fr;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Top Bar ── */
+    .topbar {
+      grid-column: 1 / -1;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+      position: relative;
+      z-index: 10;
+    }
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .topbar-icon {
+      width: 28px; height: 28px;
+      background: var(--accent);
+      border-radius: 4px;
+      display: grid;
+      place-items: center;
+    }
+    .topbar-icon svg { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2; }
+    .topbar-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-bright);
+      letter-spacing: 0.02em;
+    }
+    .topbar-subtitle {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+    .topbar-spacer { flex: 1; }
+    .topbar-status {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-family: var(--mono); color: var(--text-dim);
+    }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2.5s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      background: var(--bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 16px 0;
+    }
+    .sidebar-section {
+      padding: 8px 16px 4px;
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 16px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      border-left: 3px solid transparent;
+      color: var(--text);
+      font-size: 13px;
+      user-select: none;
+    }
+    .nav-item:hover {
+      background: var(--bg-card);
+      color: var(--accent-h);
+      border-left-color: var(--accent);
+    }
+    .nav-item.active {
+      background: var(--bg-card);
+      color: var(--accent-h);
+      border-left-color: var(--accent);
+      font-weight: 500;
+    }
+    .nav-icon { width: 16px; height: 16px; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto;
+      font-size: 10px;
+      font-family: var(--mono);
+      background: var(--border);
+      color: var(--text-dim);
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+    .nav-item.active .nav-badge, .nav-item:hover .nav-badge {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Main ── */
+    .main {
+      background: var(--bg-panel);
+      overflow-y: auto;
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-bright);
+      letter-spacing: 0.01em;
+    }
+    .page-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      margin-top: 4px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 16px;
+      border-radius: 4px;
+      border: 1px solid;
+      font-size: 12px;
+      font-family: var(--sans);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--accent-h); border-color: var(--accent-h); }
+    .btn-outline {
+      background: transparent;
+      border-color: var(--border-l);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: var(--bg-card); color: var(--accent-h); border-color: var(--accent); }
+    .btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    /* ── Stats row ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+    .stat-card:hover { border-color: var(--accent); }
+    .stat-label {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text-bright);
+      font-family: var(--mono);
+      line-height: 1;
+    }
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+    .stat-ok { color: var(--green); }
+    .stat-warn { color: var(--yellow); }
+    .stat-err { color: var(--red); }
+
+    /* ── API Cards ── */
+    .apis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .api-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .api-card:hover { border-color: var(--border-l); }
+    .api-card-header {
+      padding: 14px 18px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .api-card-icon {
+      width: 32px; height: 32px;
+      border-radius: 4px;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .api-card-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-bright);
+    }
+    .api-card-host {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      margin-top: 1px;
+    }
+    .api-status-pill {
+      margin-left: auto;
+      font-size: 10px;
+      font-family: var(--mono);
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .pill-ok  { background: rgba(46,204,113,0.12); color: var(--green); border: 1px solid rgba(46,204,113,0.25); }
+    .pill-err { background: rgba(231,76,60,0.12);  color: var(--red);   border: 1px solid rgba(231,76,60,0.25); }
+    .pill-loading { background: rgba(16,122,176,0.12); color: var(--accent-h); border: 1px solid rgba(16,122,176,0.25); }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .api-card-body { padding: 14px 18px; }
+    .api-endpoints {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .endpoint-tag {
+      font-size: 10px;
+      font-family: var(--mono);
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+    .api-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── Results Panel ── */
+    .results-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .results-header {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .results-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-bright);
+      font-family: var(--mono);
+    }
+    .results-meta {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+    .results-clear {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 11px;
+      font-family: var(--mono);
+      padding: 2px 8px;
+      border-radius: 3px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .results-clear:hover { color: var(--accent-h); background: var(--bg-panel); }
+    .results-body {
+      padding: 16px 18px;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+    .result-entry {
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-entry:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .result-meta {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 8px;
+    }
+    .result-api-name {
+      font-size: 11px; font-weight: 600; color: var(--accent-h); font-family: var(--mono);
+    }
+    .result-time {
+      font-size: 10px; color: var(--text-dim); font-family: var(--mono);
+    }
+    .result-status-ok  { font-size: 10px; color: var(--green); font-family: var(--mono); }
+    .result-status-err { font-size: 10px; color: var(--red);   font-family: var(--mono); }
+    pre.result-json {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text);
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .empty-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.4; }
+
+    /* ── Table ── */
+    .data-table-wrap {
+      overflow-x: auto;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+    table.data-table th {
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-dark);
+    }
+    table.data-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: middle;
+    }
+    table.data-table tr:last-child td { border-bottom: none; }
+    table.data-table tr:hover td { background: var(--bg-panel); }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab {
+      padding: 8px 16px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tab:hover { color: var(--accent-h); }
+    .tab.active { color: var(--accent-h); border-bottom-color: var(--accent); }
+
+    /* ── Search ── */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      min-width: 200px;
+    }
+    .search-bar svg { width: 13px; height: 13px; stroke: var(--text-dim); fill: none; stroke-width: 2; flex-shrink: 0; }
+    .search-bar input {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 12px;
+      font-family: var(--mono);
+      width: 100%;
+    }
+    .search-bar input::placeholder { color: var(--text-dim); }
+
+    /* spinner */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Views ── */
+    .view { display: none; flex-direction: column; gap: 24px; }
+    .view.active { display: flex; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .stats-grid { grid-template-columns: repeat(2,1fr); }
+      .apis-grid  { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-logo">
+      <div class="topbar-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/></svg>
+      </div>
+      <div>
+        <div class="topbar-title">API Orchestration Console</div>
+        <div class="topbar-subtitle">namespace: api-frontend · v1.0.0</div>
+      </div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-status">
+      <span class="status-dot"></span>
+      <span id="systemStatus">System Operational</span>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-section">Navigation</div>
+    <div class="nav-item active" data-view="dashboard" onclick="switchView(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" data-view="f1" onclick="switchView(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-10 4 6 3-4 6 8"/></svg>
+      Formula 1 Champions
+      <span class="nav-badge" id="badge-f1">—</span>
+    </div>
+    <div class="nav-item" data-view="football" onclick="switchView(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20M2 12h20"/></svg>
+      Premier League
+      <span class="nav-badge" id="badge-football">—</span>
+    </div>
+    <div class="nav-item" data-view="cricket" onclick="switchView(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+      Cricket World Cup
+      <span class="nav-badge" id="badge-cricket">—</span>
+    </div>
+    <div class="nav-item" data-view="tennis" onclick="switchView(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M5.5 5.5c5 5 8 8 13 13"/></svg>
+      Tennis Grand Slams
+      <span class="nav-badge" id="badge-tennis">—</span>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:16px">Tools</div>
+    <div class="nav-item" data-view="request" onclick="switchView(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      API Request Builder
+    </div>
+    <div class="nav-item" data-view="log" onclick="switchView(this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Request Log
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- DASHBOARD VIEW -->
+    <div class="view active" id="view-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-desc">Monitor and orchestrate all external API endpoints</div>
+        </div>
+        <button class="btn btn-primary" onclick="checkAllHealth()">
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh All
+        </button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total APIs</div>
+          <div class="stat-value">4</div>
+          <div class="stat-sub">Configured endpoints</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Online</div>
+          <div class="stat-value stat-ok" id="stat-online">—</div>
+          <div class="stat-sub">Responding APIs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Requests Made</div>
+          <div class="stat-value" id="stat-requests">0</div>
+          <div class="stat-sub">This session</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Last Checked</div>
+          <div class="stat-value" style="font-size:14px" id="stat-checked">—</div>
+          <div class="stat-sub">Health check time</div>
+        </div>
+      </div>
+
+      <div class="apis-grid">
+        <!-- F1 -->
+        <div class="api-card">
+          <div class="api-card-header">
+            <div class="api-card-icon" style="background:rgba(16,122,176,0.15)">🏎️</div>
+            <div>
+              <div class="api-card-name">Formula 1 Champions</div>
+              <div class="api-card-host">formual1-api.ocp.cloud.lab</div>
+            </div>
+            <div class="api-status-pill pill-loading" id="health-f1">
+              <span class="pill-dot"></span><span class="spinner"></span>
+            </div>
+          </div>
+          <div class="api-card-body">
+            <div class="api-endpoints">
+              <span class="endpoint-tag">GET /champions</span>
+              <span class="endpoint-tag">GET /health</span>
+            </div>
+            <div class="api-actions">
+              <button class="btn btn-primary" onclick="fetchData('f1')">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+                Fetch Champions
+              </button>
+              <button class="btn btn-outline" onclick="switchToView('f1')">View Data</button>
+            </div>
+          </div>
+        </div>
+        <!-- Football -->
+        <div class="api-card">
+          <div class="api-card-header">
+            <div class="api-card-icon" style="background:rgba(16,122,176,0.15)">⚽</div>
+            <div>
+              <div class="api-card-name">Premier League Champions</div>
+              <div class="api-card-host">football-api.ocp.cloud.lab</div>
+            </div>
+            <div class="api-status-pill pill-loading" id="health-football">
+              <span class="pill-dot"></span><span class="spinner"></span>
+            </div>
+          </div>
+          <div class="api-card-body">
+            <div class="api-endpoints">
+              <span class="endpoint-tag">GET /champions</span>
+              <span class="endpoint-tag">GET /health</span>
+            </div>
+            <div class="api-actions">
+              <button class="btn btn-primary" onclick="fetchData('football')">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+                Fetch Champions
+              </button>
+              <button class="btn btn-outline" onclick="switchToView('football')">View Data</button>
+            </div>
+          </div>
+        </div>
+        <!-- Cricket -->
+        <div class="api-card">
+          <div class="api-card-header">
+            <div class="api-card-icon" style="background:rgba(16,122,176,0.15)">🏏</div>
+            <div>
+              <div class="api-card-name">Cricket World Cup Champions</div>
+              <div class="api-card-host">cricket-api.ocp.cloud.lab</div>
+            </div>
+            <div class="api-status-pill pill-loading" id="health-cricket">
+              <span class="pill-dot"></span><span class="spinner"></span>
+            </div>
+          </div>
+          <div class="api-card-body">
+            <div class="api-endpoints">
+              <span class="endpoint-tag">GET /champions</span>
+              <span class="endpoint-tag">GET /health</span>
+            </div>
+            <div class="api-actions">
+              <button class="btn btn-primary" onclick="fetchData('cricket')">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+                Fetch Champions
+              </button>
+              <button class="btn btn-outline" onclick="switchToView('cricket')">View Data</button>
+            </div>
+          </div>
+        </div>
+        <!-- Tennis -->
+        <div class="api-card">
+          <div class="api-card-header">
+            <div class="api-card-icon" style="background:rgba(16,122,176,0.15)">🎾</div>
+            <div>
+              <div class="api-card-name">Tennis Grand Slam Champions</div>
+              <div class="api-card-host">tennis-api.ocp.cloud.lab</div>
+            </div>
+            <div class="api-status-pill pill-loading" id="health-tennis">
+              <span class="pill-dot"></span><span class="spinner"></span>
+            </div>
+          </div>
+          <div class="api-card-body">
+            <div class="api-endpoints">
+              <span class="endpoint-tag">GET /champions</span>
+              <span class="endpoint-tag">GET /health</span>
+            </div>
+            <div class="api-actions">
+              <button class="btn btn-primary" onclick="fetchData('tennis')">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+                Fetch Champions
+              </button>
+              <button class="btn btn-outline" onclick="switchToView('tennis')">View Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results panel -->
+      <div class="results-panel">
+        <div class="results-header">
+          <svg style="width:14px;height:14px;stroke:var(--accent-h);fill:none;stroke-width:2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span class="results-title">API RESPONSES</span>
+          <span class="results-meta" id="resp-count">0 responses</span>
+          <button class="results-clear" onclick="clearResults()">Clear</button>
+        </div>
+        <div class="results-body" id="results-body">
+          <div class="empty-state">
+            <div class="empty-icon">◌</div>
+            No API calls made yet. Click "Fetch Champions" on any card above.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA VIEWS (shared template via JS) -->
+    <div class="view" id="view-f1"></div>
+    <div class="view" id="view-football"></div>
+    <div class="view" id="view-cricket"></div>
+    <div class="view" id="view-tennis"></div>
+
+    <!-- REQUEST BUILDER -->
+    <div class="view" id="view-request">
+      <div class="page-header">
+        <div>
+          <div class="page-title">API Request Builder</div>
+          <div class="page-desc">Construct and send custom requests to any external API</div>
+        </div>
+      </div>
+      <div class="results-panel">
+        <div class="results-header">
+          <span class="results-title">REQUEST CONFIGURATION</span>
+        </div>
+        <div class="results-body" style="max-height:none">
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:16px">
+            <div>
+              <div class="stat-label" style="margin-bottom:6px">API Target</div>
+              <select id="rb-api" style="width:100%;background:var(--bg-dark);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:4px;font-family:var(--mono);font-size:12px;outline:none;">
+                <option value="f1">Formula 1 Champions</option>
+                <option value="football">Premier League Champions</option>
+                <option value="cricket">Cricket World Cup Champions</option>
+                <option value="tennis">Tennis Grand Slam Champions</option>
+              </select>
+            </div>
+            <div>
+              <div class="stat-label" style="margin-bottom:6px">Endpoint Path</div>
+              <input id="rb-path" type="text" value="/champions" style="width:100%;background:var(--bg-dark);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:4px;font-family:var(--mono);font-size:12px;outline:none;" placeholder="/champions"/>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="runCustomRequest()">
+            <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Execute Request
+          </button>
+          <div id="rb-result" style="margin-top:16px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG VIEW -->
+    <div class="view" id="view-log">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Request Log</div>
+          <div class="page-desc">All API calls made during this session</div>
+        </div>
+        <button class="btn btn-outline" onclick="clearLog()">Clear Log</button>
+      </div>
+      <div class="results-panel">
+        <div class="results-header">
+          <span class="results-title">SESSION LOG</span>
+          <span class="results-meta" id="log-count">0 entries</span>
+        </div>
+        <div class="results-body" id="log-body">
+          <div class="empty-state">
+            <div class="empty-icon">◌</div>
+            No requests logged yet.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const API_META = {
+  f1:       { name:'Formula 1 Champions',       icon:'🏎️', cols:['year','driver','team'] },
+  football: { name:'Premier League Champions',  icon:'⚽', cols:['year','team','manager'] },
+  cricket:  { name:'Cricket World Cup Champions',icon:'🏏', cols:['year','winner','format'] },
+  tennis:   { name:'Tennis Grand Slam Champions',icon:'🎾', cols:['year','tournament','winner','nationality'] },
+};
+
+let requestCount = 0;
+let onlineCount = 0;
+const results = [];
+const logEntries = [];
+
+function switchView(el) {
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  const v = el.dataset.view;
+  switchToView(v);
+}
+function switchToView(v) {
+  document.querySelectorAll('.view').forEach(i=>i.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(i=>{ if(i.dataset.view===v) i.classList.add('active'); });
+  if(['f1','football','cricket','tennis'].includes(v)) renderDataView(v);
+}
+
+async function checkHealth(api) {
+  const el = document.getElementById('health-'+api);
+  el.className = 'api-status-pill pill-loading';
+  el.innerHTML = '<span class="pill-dot"></span><span class="spinner"></span>';
+  try {
+    const r = await fetch(`/api/proxy/${api}/health`);
+    if(r.ok) {
+      el.className = 'api-status-pill pill-ok';
+      el.innerHTML = '<span class="pill-dot"></span>Online';
+      return true;
+    } else throw new Error();
+  } catch {
+    el.className = 'api-status-pill pill-err';
+    el.innerHTML = '<span class="pill-dot"></span>Offline';
+    return false;
+  }
+}
+
+async function checkAllHealth() {
+  onlineCount = 0;
+  document.getElementById('stat-checked').textContent = '...';
+  const checks = await Promise.all(['f1','football','cricket','tennis'].map(checkHealth));
+  onlineCount = checks.filter(Boolean).length;
+  document.getElementById('stat-online').textContent = onlineCount;
+  document.getElementById('stat-checked').textContent = new Date().toLocaleTimeString();
+}
+
+async function fetchData(api) {
+  requestCount++;
+  document.getElementById('stat-requests').textContent = requestCount;
+  const ts = new Date().toLocaleTimeString();
+  addLog(api, '/champions', ts);
+  let data, ok=true;
+  try {
+    const r = await fetch(`/api/proxy/${api}/champions`);
+    data = await r.json();
+    ok = r.ok;
+  } catch(e) {
+    data = { error: true, message: e.message };
+    ok = false;
+  }
+  // update badge
+  if(ok && Array.isArray(data)) {
+    document.getElementById('badge-'+api).textContent = data.length;
+  }
+  addResult(api, data, ok, ts);
+  // if data view is visible for this api, re-render
+  const view = document.getElementById('view-'+api);
+  if(view.classList.contains('active')) renderDataView(api, data);
+}
+
+function addResult(api, data, ok, ts) {
+  results.unshift({api, data, ok, ts});
+  document.getElementById('resp-count').textContent = results.length+' responses';
+  renderResults();
+}
+function renderResults() {
+  const el = document.getElementById('results-body');
+  if(!results.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">◌</div>No API calls made yet.</div>'; return; }
+  el.innerHTML = results.map(r=>`
+    <div class="result-entry">
+      <div class="result-meta">
+        <span class="result-api-name">${API_META[r.api].icon} ${API_META[r.api].name}</span>
+        <span class="${r.ok?'result-status-ok':'result-status-err'}">${r.ok?'200 OK':'ERROR'}</span>
+        <span class="result-time">${r.ts}</span>
+      </div>
+      <pre class="result-json">${JSON.stringify(r.data, null, 2)}</pre>
+    </div>`).join('');
+}
+function clearResults() { results.length=0; renderResults(); document.getElementById('resp-count').textContent='0 responses'; }
+
+function addLog(api, path, ts) {
+  logEntries.unshift({api, path, ts});
+  document.getElementById('log-count').textContent = logEntries.length+' entries';
+  renderLog();
+}
+function renderLog() {
+  const el = document.getElementById('log-body');
+  if(!logEntries.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">◌</div>No requests logged yet.</div>'; return; }
+  el.innerHTML='<div class="data-table-wrap"><table class="data-table"><thead><tr><th>#</th><th>Time</th><th>API</th><th>Path</th></tr></thead><tbody>'
+    +logEntries.map((e,i)=>`<tr><td>${logEntries.length-i}</td><td>${e.ts}</td><td>${API_META[e.api].icon} ${API_META[e.api].name}</td><td>${e.path}</td></tr>`).join('')
+    +'</tbody></table></div>';
+}
+function clearLog() { logEntries.length=0; renderLog(); document.getElementById('log-count').textContent='0 entries'; }
+
+let cachedData = {};
+async function renderDataView(api, data) {
+  const view = document.getElementById('view-'+api);
+  if(!data) {
+    // Try fetching
+    view.innerHTML = `<div class="page-header"><div><div class="page-title">${API_META[api].icon} ${API_META[api].name}</div></div><button class="btn btn-primary" onclick="fetchData('${api}')">Fetch Data</button></div><div class="empty-state"><div class="empty-icon">◌</div>Click "Fetch Data" to load champions.</div>`;
+    return;
+  }
+  cachedData[api] = data;
+  view.innerHTML = buildDataViewHTML(api, data);
+}
+
+function buildDataViewHTML(api, data) {
+  const meta = API_META[api];
+  if(!Array.isArray(data)) {
+    return `<div class="page-header"><div><div class="page-title">${meta.icon} ${meta.name}</div></div><button class="btn btn-primary" onclick="fetchData('${api}')">Refresh</button></div><pre class="result-json">${JSON.stringify(data,null,2)}</pre>`;
+  }
+  const headers = meta.cols;
+  const rows = data.map(item=>`<tr>${headers.map(h=>`<td>${item[h]||'—'}</td>`).join('')}</tr>`).join('');
+  return `
+  <div class="page-header">
+    <div>
+      <div class="page-title">${meta.icon} ${meta.name}</div>
+      <div class="page-desc">${data.length} records loaded</div>
+    </div>
+    <button class="btn btn-primary" onclick="fetchData('${api}')">
+      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Refresh
+    </button>
+  </div>
+  <div class="results-panel">
+    <div class="results-header">
+      <span class="results-title">CHAMPIONS DATA</span>
+      <span class="results-meta">${data.length} entries</span>
+    </div>
+    <div class="results-body" style="max-height:none">
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function runCustomRequest() {
+  const api = document.getElementById('rb-api').value;
+  const path = document.getElementById('rb-path').value || '/champions';
+  requestCount++;
+  document.getElementById('stat-requests').textContent = requestCount;
+  addLog(api, path, new Date().toLocaleTimeString());
+  let data, ok=true;
+  try {
+    const r = await fetch(`/api/proxy/${api}${path}`);
+    data = await r.json();
+    ok = r.ok;
+  } catch(e) {
+    data = {error:true,message:e.message}; ok=false;
+  }
+  const el = document.getElementById('rb-result');
+  el.innerHTML = `<div class="result-meta"><span class="${ok?'result-status-ok':'result-status-err'}">${ok?'✓ Success':'✗ Error'}</span><span class="result-time">${new Date().toLocaleTimeString()}</span></div><pre class="result-json">${JSON.stringify(data,null,2)}</pre>`;
+}
+
+// Init data views
+['f1','football','cricket','tennis'].forEach(api=>{
+  renderDataView(api, null);
+});
+
+// Initial health check
+checkAllHealth();
+</script>
+</body>
+</html>
