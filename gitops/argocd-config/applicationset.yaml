@@ -1,31 +1,31 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: apis-applicationset
-  namespace: argocd
+  name: api-applicationset
+  namespace: openshift-gitops
 spec:
   generators:
     - list:
         elements:
-          - name: api-one
-            namespace: team-a
-            valuesFile: environments/team-a/api-one.yaml
+          - name: api-cricket
+            namespace: lbg-ocp-servicemesh-3-400-lab
+            valuesFile: environments/external-api/api-cricket.yaml
 
-          - name: api-two
-            namespace: team-a
-            valuesFile: environments/team-a/api-two.yaml
+          - name: api-f1
+            namespace: lbg-ocp-servicemesh-3-400-lab
+            valuesFile: environments/external-api/api-f1.yaml
 
-          - name: api-three
-            namespace: team-a
-            valuesFile: environments/team-a/api-three.yaml
+          - name: api-football
+            namespace: lbg-ocp-servicemesh-3-400-lab
+            valuesFile: environments/external-api/api-football.yaml
 
-          - name: api-four
-            namespace: team-a
-            valuesFile: environments/team-a/api-four.yaml
+          - name: api-tennis
+            namespace: lbg-ocp-servicemesh-3-400-lab
+            valuesFile: environments/external-api/api-tennis.yaml
 
-          - name: api-five
-            namespace: team-b
-            valuesFile: environments/team-b/api-five.yaml
+          - name: api-dashboard
+            namespace: lbg-ocp-smesh-dashboard-500-lab
+            valuesFile: environments/frontend-api/api-dashboard.yaml
 
   template:
     metadata:
@@ -43,8 +43,7 @@ spec:
         server: https://kubernetes.default.svc
         namespace: '{{namespace}}'
       syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
         syncOptions:
-          - CreateNamespace=true
+        - CreateNamespace=false
+        - ServerSideApply=true
+        - ApplyOutOfSyncOnly=true

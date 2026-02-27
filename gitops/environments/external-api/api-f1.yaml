@@ -1,6 +1,6 @@
 image:
-  repository: myregistry/api-one
-  tag: v1.0.0
+  repository: image-registry.openshift-image-registry.svc:5000/lbg-ocp-servicemesh-3-400-lab/formula1-api
+  tag: latest
 
 route:
-  host: api-one.apps.cluster.example.com
+  host: formula1-api.ocp.cloud.lab
