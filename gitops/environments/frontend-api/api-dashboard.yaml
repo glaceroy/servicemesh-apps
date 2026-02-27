@@ -1,0 +1,6 @@
+image:
+  repository: myregistry/api-one
+  tag: v1.0.0
+
+route:
+  host: api-one.apps.cluster.example.com
