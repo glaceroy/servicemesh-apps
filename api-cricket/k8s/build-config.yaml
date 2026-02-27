@@ -1,0 +1,40 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: api-orchestration-console
+  namespace: lbg-ocp-smesh-dashboard-500-lab
+  labels:
+    app: api-orchestration-console
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'api-orchestration-console:latest'
+  resources:
+    limits:
+      cpu: '1'
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  postCommit: {}
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/glaceroy/api-orchestration-console.git'
+      ref: main
+    contextDir: api-cricket 
+    sourceSecret:
+      name: git-secret
+  triggers:
+    - type: ConfigChange
+    - type: GitHub
+      github:
+        secret: git-secret
+  runPolicy: Serial

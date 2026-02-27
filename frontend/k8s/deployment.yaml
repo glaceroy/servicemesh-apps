@@ -1,19 +1,10 @@
 ---
-# ── Namespace ─────────────────────────────────────────────────
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: api-frontend
-  labels:
-    app.kubernetes.io/managed-by: kubectl
-
----
 # ── ServiceAccount ────────────────────────────────────────────
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: frontend-sa
-  namespace: api-frontend
+  namespace: lbg-ocp-smesh-dashboard-500-lab
 
 ---
 # ── ConfigMap  (External API URLs - configure here) ──────────
@@ -21,7 +12,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: frontend-config
-  namespace: api-frontend
+  namespace: lbg-ocp-smesh-dashboard-500-lab
 data:
   F1_API_URL:       "http://formual1-api.ocp.cloud.lab"
   FOOTBALL_API_URL: "http://football-api.ocp.cloud.lab"
@@ -34,7 +25,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-orchestration-console
-  namespace: api-frontend
+  namespace: lbg-ocp-smesh-dashboard-500-lab
   labels:
     app: api-orchestration-console
 spec:
@@ -100,7 +91,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: api-orchestration-console
-  namespace: api-frontend
+  namespace: lbg-ocp-smesh-dashboard-500-lab
   labels:
     app: api-orchestration-console
 spec:
@@ -118,11 +109,11 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: api-orchestration-console
-  namespace: api-frontend
+  namespace: lbg-ocp-smesh-dashboard-500-lab
   labels:
     app: api-orchestration-console
 spec:
-  host: api-console.ocp.cloud.lab   # update as needed
+  host: smesh-api-console.ocp.cloud.lab
   to:
     kind: Service
     name: api-orchestration-console
