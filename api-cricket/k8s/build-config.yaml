@@ -1,15 +1,15 @@
 kind: BuildConfig
 apiVersion: build.openshift.io/v1
 metadata:
-  name: api-orchestration-console
-  namespace: lbg-ocp-smesh-dashboard-500-lab
+  name: api-cricket
+  namespace: lbg-ocp-servicemesh-3-400-lab
   labels:
-    app: api-orchestration-console
+    app: api-cricket
 spec:
   output:
     to:
       kind: ImageStreamTag
-      name: 'api-orchestration-console:latest'
+      name: 'api-cricket:latest'
   resources:
     limits:
       cpu: '1'
@@ -27,7 +27,7 @@ spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/glaceroy/api-orchestration-console.git'
+      uri: 'https://github.com/glaceroy/servicemesh-apps.git'
       ref: main
     contextDir: api-cricket 
     sourceSecret:
