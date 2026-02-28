@@ -33,9 +33,9 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/your-org/gitops-repo.git
+        repoURL: https://github.com/glaceroy/servicemesh-apps.git
         targetRevision: main
-        path: charts/common-api
+        path: gitops/charts/common
         helm:
           valueFiles:
             - ../../{{valuesFile}}

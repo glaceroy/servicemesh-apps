@@ -1,0 +1,33 @@
+{{- if .Values.build.enabled }}
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: {{ include "common-api.fullname" . }}
+  namespace: {{ include "common-api.namespace" . }}
+  labels:
+    app: {{ include "common-api.fullname" . }}
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: "{{ include "common-api.fullname" . }}:{{ .Values.image.tag }}"
+  resources:
+{{ toYaml .Values.resources | indent 4 }}
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: {{ .Values.build.dockerfilePath }}
+  source:
+    type: Git
+    git:
+      uri: {{ .Values.build.git.uri }}
+      ref: {{ .Values.build.git.ref }}
+    contextDir: {{ .Values.build.git.contextDir }}
+    sourceSecret:
+      name: {{ .Values.build.sourceSecret }}
+  triggers:
+    - type: ConfigChange
+  runPolicy: Serial
+{{- end }}
