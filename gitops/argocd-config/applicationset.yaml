@@ -36,7 +36,7 @@ spec:
     spec:
       project: test-library
       source:
-        repoURL: https://github.com/glaceroy/servicemesh-apps.git
+        repoURL: https://github.com/glaceroy/servicemesh-apps
         targetRevision: main
         path: gitops/charts/common
         helm:
