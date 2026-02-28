@@ -30,8 +30,11 @@ spec:
   template:
     metadata:
       name: '{{name}}'
+      labels:
+        app-type: test-library
+        team: servicemesh
     spec:
-      project: default
+      project: test-library
       source:
         repoURL: https://github.com/glaceroy/servicemesh-apps.git
         targetRevision: main
