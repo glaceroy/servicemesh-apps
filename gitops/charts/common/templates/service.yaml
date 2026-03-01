@@ -6,5 +6,7 @@ spec:
   selector:
     app: {{ include "common-api.fullname" . }}
   ports:
-    - port: {{ .Values.servicePort }}
+    - name: http
+      port: {{ .Values.servicePort }}
+      protocol: TCP
       targetPort: {{ .Values.containerPort }}
