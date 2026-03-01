@@ -4,3 +4,7 @@ image:
 
 route:
   host: tennis-api.ocp.cloud.lab
+
+build:
+  git:
+    contextDir: "api-tennis"

@@ -3,7 +3,6 @@ apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
   name: {{ include "common-api.fullname" . }}
-  namespace: {{ include "common-api.namespace" . }}
   labels:
     app: {{ include "common-api.fullname" . }}
 spec:

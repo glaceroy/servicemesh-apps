@@ -15,7 +15,7 @@ route:
 build:
   enabled: true
   git:
-    uri: ""
+    uri: "https://github.com/glaceroy/servicemesh-apps.git"
     ref: main
     contextDir: ""
   dockerfilePath: Dockerfile
