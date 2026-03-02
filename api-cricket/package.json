@@ -1,15 +1,16 @@
 {
   "name": "api-cricket",
   "version": "1.0.0",
-  "description": "Professional Node.js app for api-dashboard",
+  "description": "Cricket Champions API",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node server.js"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   },
-  "keywords": ["openshift", "nodejs", "nodeport"],
+  "dependencies": {
+    "express": "^4.18.2"
+  },
   "license": "MIT"
 }
