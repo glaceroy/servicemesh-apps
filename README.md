@@ -10,7 +10,7 @@ Namespace 1: api-frontend
     └──► Route: api-console.ocp.cloud.lab
 
 Namespace 2: api-external
-├── formula1-api   ──► Route: formual1-api.ocp.cloud.lab
+├── formula1-api   ──► Route: formula1-api.ocp.cloud.lab
 ├── football-api   ──► Route: football-api.ocp.cloud.lab
 ├── cricket-api    ──► Route: cricket-api.ocp.cloud.lab
 └── tennis-api     ──► Route: tennis-api.ocp.cloud.lab
@@ -45,7 +45,7 @@ They are set via the `frontend-config` ConfigMap in `k8s/namespace1/frontend.yam
 
 ```yaml
 data:
-  F1_API_URL:       "http://formual1-api.ocp.cloud.lab"
+  F1_API_URL:       "http://formula1-api.ocp.cloud.lab"
   FOOTBALL_API_URL: "http://football-api.ocp.cloud.lab"
   CRICKET_API_URL:  "http://cricket-api.ocp.cloud.lab"
   TENNIS_API_URL:   "http://tennis-api.ocp.cloud.lab"
