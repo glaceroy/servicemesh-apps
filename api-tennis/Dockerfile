@@ -1,20 +1,26 @@
+# Use official Node.js Alpine base
 FROM node:20-alpine
 
-# Create non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
+# Set working directory
 WORKDIR /app
 
+# Copy dependency manifests first (better layer caching)
 COPY package*.json ./
-RUN npm install --production
 
+# Install only production dependencies
+RUN npm install --omit=dev && \
+    npm cache clean --force
+
+# Copy application source
 COPY . .
 
-# Set ownership
-RUN chown -R appuser:appgroup /app
+# CRITICAL: Allow OpenShift arbitrary UID support
+# OpenShift runs container with random UID and GID=0
+RUN chgrp -R 0 /app && \
+    chmod -R g+rwX /app
 
-USER appuser
-
+# Expose application port
 EXPOSE 8080
 
+# Start application
 CMD ["node", "server.js"]
