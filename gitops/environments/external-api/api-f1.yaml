@@ -1,5 +1,5 @@
 image:
-  repository: image-registry.openshift-image-registry.svc:5000/lbg-ocp-servicemesh-3-400-lab/formula1-api
+  repository: image-registry.openshift-image-registry.svc:5000/lbg-ocp-servicemesh-3-400-lab/api-f1
   tag: latest
 
 route:

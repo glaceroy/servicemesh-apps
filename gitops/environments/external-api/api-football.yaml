@@ -1,5 +1,5 @@
 image:
-  repository: image-registry.openshift-image-registry.svc:5000/lbg-ocp-servicemesh-3-400-lab/football-api
+  repository: image-registry.openshift-image-registry.svc:5000/lbg-ocp-servicemesh-3-400-lab/api-football
   tag: latest
 
 route:
