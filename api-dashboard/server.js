@@ -7,10 +7,10 @@ const PORT = process.env.PORT || 8080;
 
 // External API URLs from environment variables / configmap
 const API_URLS = {
-  f1:       process.env.F1_API_URL       || 'http://formual1-api.ocp.cloud.lab',
-  football: process.env.FOOTBALL_API_URL || 'http://football-api.ocp.cloud.lab',
-  cricket:  process.env.CRICKET_API_URL  || 'http://cricket-api.ocp.cloud.lab',
-  tennis:   process.env.TENNIS_API_URL   || 'http://tennis-api.ocp.cloud.lab',
+  f1:       process.env.F1_API_URL       || 'https://formual1-api.ocp.cloud.lab',
+  football: process.env.FOOTBALL_API_URL || 'https://football-api.ocp.cloud.lab',
+  cricket:  process.env.CRICKET_API_URL  || 'https://cricket-api.ocp.cloud.lab',
+  tennis:   process.env.TENNIS_API_URL   || 'https://tennis-api.ocp.cloud.lab',
 };
 
 app.use(express.json());
