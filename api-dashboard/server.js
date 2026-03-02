@@ -1,13 +1,19 @@
 const express = require('express');
 const axios = require('axios');
 const path = require('path');
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Insecure https agent
+const insecureAgent = new https.Agent({
+  rejectUnauthorized: false,
+});
+
 // External API URLs from environment variables / configmap
 const API_URLS = {
-  f1:       process.env.F1_API_URL       || 'https://formual1-api.ocp.cloud.lab',
+  f1:       process.env.F1_API_URL       || 'https://formula1-api.ocp.cloud.lab',
   football: process.env.FOOTBALL_API_URL || 'https://football-api.ocp.cloud.lab',
   cricket:  process.env.CRICKET_API_URL  || 'https://cricket-api.ocp.cloud.lab',
   tennis:   process.env.TENNIS_API_URL   || 'https://tennis-api.ocp.cloud.lab',
@@ -51,6 +57,7 @@ async function proxyRequest(apiKey, endpoint, req, res) {
       data: req.body,
       timeout: 10000,
       headers: { 'Content-Type': 'application/json' },
+      httpsAgent: insecureAgent
     });
     console.log(`[${ts}] PROXY ← ${apiKey.toUpperCase()} | status: ${response.status}`);
     res.status(response.status).json(response.data);
