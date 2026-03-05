@@ -12,7 +12,7 @@ build:
 certificate:
   privateKeyRotation: Never
   duration: 2880h
-  renewBefore: 3720h
+  renewBefore: 720h
   commonName: tennis-api.ocp.cloud.lab
   dnsNames:
     - tennis-api.ocp.cloud.lab
