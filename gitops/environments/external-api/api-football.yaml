@@ -10,7 +10,6 @@ build:
     contextDir: "api-football"
 
 certificate:
-  privateKeyRotation: Never
   duration: 2880h
   renewBefore: 720h
   commonName: football-api.ocp.cloud.lab

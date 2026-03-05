@@ -6,7 +6,6 @@ metadata:
 spec:
   secretName: {{ include "common-api.fullname" . }}-tls
   privateKey:
-    rotationPolicy: {{ .Values.certificate.privateKeyRotation | default "Never" }}
     algorithm: {{ .Values.certificate.keyAlgorithm | default "RSA" }}
     size: {{ .Values.certificate.keySize | default 2048 }}
   duration: {{ .Values.certificate.duration }}

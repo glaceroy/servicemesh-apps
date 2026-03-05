@@ -10,7 +10,6 @@ build:
     contextDir: "api-tennis"
 
 certificate:
-  privateKeyRotation: Never
   duration: 2880h
   renewBefore: 720h
   commonName: tennis-api.ocp.cloud.lab

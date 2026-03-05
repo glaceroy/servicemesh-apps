@@ -10,7 +10,6 @@ build:
     contextDir: "api-f1"
 
 certificate:
-  privateKeyRotation: Never
   duration: 2880h
   renewBefore: 720h
   commonName: formula1-api.ocp.cloud.lab
