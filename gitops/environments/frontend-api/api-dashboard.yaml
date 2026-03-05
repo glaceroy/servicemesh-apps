@@ -8,3 +8,15 @@ route:
 build:
   git:
     contextDir: "api-dashboard"
+
+certificate:
+  privateKeyRotation: Never
+  duration: 2880h
+  renewBefore: 3720h
+  commonName: api-dashboard.ocp.cloud.lab
+  dnsNames:
+    - api-dashboard.ocp.cloud.lab
+  issuerName: vault-cluster-issuer
+  issuerKind: ClusterIssuer
+  keyAlgorithm: RSA
+  keySize: 2048

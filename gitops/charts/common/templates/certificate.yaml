@@ -1,0 +1,21 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "common-api.fullname" . }}-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: {{ include "common-api.fullname" . }}-tls
+  privateKey:
+    rotationPolicy: {{ .Values.certificate.privateKeyRotation | default "Never" }}
+  duration: {{ .Values.certificate.duration | default "120d" }}
+  renewBefore: {{ .Values.certificate.renewBefore | default "30d" }}
+  commonName: {{ .Values.certificate.commonName | default (include "common-api.fullname" . ~ ".ocp.cloud.lab") }}
+  dnsNames:
+    {{- range .Values.certificate.dnsNames }}
+    - {{ . }}
+    {{- end }}
+  issuerRef:
+    name: {{ .Values.certificate.issuerName | default "vault-cluster-issuer" }}
+    kind: {{ .Values.certificate.issuerKind | default "ClusterIssuer" }}
+  keyAlgorithm: {{ .Values.certificate.keyAlgorithm | default "RSA" }}
+  keySize: {{ .Values.certificate.keySize | default 2048 }}

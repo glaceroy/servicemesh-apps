@@ -8,3 +8,15 @@ route:
 build:
   git:
     contextDir: "api-cricket"
+
+certificate:
+  privateKeyRotation: Never
+  duration: 2880h
+  renewBefore: 3720h
+  commonName: cricket-api.ocp.cloud.lab
+  dnsNames:
+    - cricket-api.ocp.cloud.lab
+  issuerName: vault-cluster-issuer
+  issuerKind: ClusterIssuer
+  keyAlgorithm: RSA
+  keySize: 2048
