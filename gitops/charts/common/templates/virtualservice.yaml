@@ -1,0 +1,17 @@
+{{- if .Values.gateway.enabled }}
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ include "common-api.fullname" . }}-vs
+spec:
+  hosts:
+  - {{ .Values.route.host }}
+  gateways:
+  - {{ include "common-api.fullname" . }}-gateway
+  http:
+  - route:
+    - destination:
+        host: {{ include "common-api.fullname" . }}
+        port:
+          number: 8080
+{{- end }}
