@@ -13,6 +13,9 @@ spec:
     metadata:
       labels:
         app: {{ include "common-api.fullname" . }}
+        {{- with .Values.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "common-api.fullname" . }}
       containers:

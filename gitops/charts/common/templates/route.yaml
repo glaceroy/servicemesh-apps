@@ -11,5 +11,5 @@ spec:
   port:
     targetPort: {{ .Values.servicePort }}
   tls:
-    termination: edge
+    termination: passthrough
 {{- end }}

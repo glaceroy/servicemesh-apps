@@ -15,6 +15,13 @@ route:
   enabled: true
   host: ""
 
+labels:
+  sidecar.istio.io/inject: "true"
+  sidecar.istio.io/proxyCPU: "100m"
+  sidecar.istio.io/proxyCPULimit: "100m"
+  sidecar.istio.io/proxyMemory: "120M"
+  sidecar.istio.io/proxyMemoryLimit: "120M"
+
 build:
   enabled: true
   git:

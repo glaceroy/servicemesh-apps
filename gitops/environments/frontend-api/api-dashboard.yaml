@@ -19,3 +19,9 @@ certificate:
   issuerKind: ClusterIssuer
   keyAlgorithm: RSA
   keySize: 2048
+
+tls:
+  mode: SIMPLE
+
+gateway:
+  enabled: true
