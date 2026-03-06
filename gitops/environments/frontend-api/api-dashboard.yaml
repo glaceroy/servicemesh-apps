@@ -25,4 +25,4 @@ tls:
 
 gateway:
   enabled: true
-  id: 005
+  id: "005"
