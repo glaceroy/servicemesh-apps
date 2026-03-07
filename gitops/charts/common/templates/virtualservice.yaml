@@ -1,4 +1,4 @@
-{{- if ( .Values.virtualservice.enabled | default false ) }}
+{{- if and .Values.virtualservice (default false .Values.virtualservice.enabled) }}
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
