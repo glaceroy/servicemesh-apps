@@ -26,3 +26,6 @@ tls:
 gateway:
   enabled: true
   id: "005"
+
+virtualservice:
+  enabled: true
